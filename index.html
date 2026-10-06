@@ -18,6 +18,13 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
 
+  <script>
+    /* Apply a saved colour theme before the first paint. */
+    try {
+      var savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "light" || savedTheme === "dark") document.documentElement.setAttribute("data-theme", savedTheme);
+    } catch (error) {}
+  </script>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/site.css">
@@ -44,6 +51,25 @@
 <body>
   <a class="skip" href="#work">Skip to work</a>
 
+  <div class="dock" id="dock" hidden>
+    <div class="shell dock__inner">
+      <a class="dock__name" href="#top">Surya Narayanan K S</a>
+      <nav class="dock__nav" aria-label="Jump to a section">
+        <ul>
+          <li><a href="#explore">Explore</a></li>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#research">Research</a></li>
+          <li><a href="#skills">Skills</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <button class="theme" type="button" data-theme-toggle hidden aria-label="Switch colour theme">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+
   <header class="hero">
     <div class="shell">
       <div class="masthead">
@@ -56,6 +82,9 @@
             <li><a href="#contact">Contact</a></li>
           </ul>
         </nav>
+        <button class="theme" type="button" data-theme-toggle hidden aria-label="Switch colour theme">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+        </button>
       </div>
 
       <div class="hero__body">
@@ -80,7 +109,7 @@
             <p class="board__status" id="board-status" role="status">All services healthy</p>
           </div>
 
-          <div class="board__grid" id="board-grid" aria-hidden="true">
+          <div class="board__grid" id="board-grid" aria-hidden="true" data-columns="7">
             <div class="tile" data-state="healthy"></div>
             <div class="tile" data-state="healthy"></div>
             <div class="tile" data-state="healthy"></div>
@@ -106,11 +135,16 @@
 
           <div class="board__foot">
             <ul class="board__legend">
-              <li><span class="swatch"></span>Waiting</li>
+              <li><span class="swatch"></span>Stopped</li>
               <li><span class="swatch swatch--starting"></span>Starting</li>
               <li><span class="swatch swatch--healthy"></span>Healthy</li>
             </ul>
-            <button class="board__replay" id="board-replay" type="button" hidden>Start again</button>
+          </div>
+
+          <div class="board__controls" id="board-controls" hidden>
+            <button class="board__button" id="board-restart" type="button">Restart all</button>
+            <button class="board__button" id="board-stop" type="button">Stop all</button>
+            <p class="board__hint">Or press any service to stop or start it.</p>
           </div>
 
           <figcaption class="board__note">A sketch of the environment I designed and rolled out at Congruent Solutions. More than 20 developers use it, and setup went from hours to under 15 minutes.</figcaption>
@@ -120,10 +154,34 @@
   </header>
 
   <main>
+    <section class="section section--explore" id="explore" aria-labelledby="explore-title" hidden>
+      <div class="shell section__grid">
+        <h2 class="section__title" id="explore-title">Explore</h2>
+        <div>
+          <p class="explore__ask" id="explore-ask">Pick a skill to see only the work and projects where I’ve used it.</p>
+          <div class="chips" id="skill-chips" role="group" aria-labelledby="explore-ask">
+            <button class="chip" type="button" data-skill="react" aria-pressed="false">React</button>
+            <button class="chip" type="button" data-skill="typescript" aria-pressed="false">TypeScript</button>
+            <button class="chip" type="button" data-skill="node" aria-pressed="false">Node.js</button>
+            <button class="chip" type="button" data-skill="dotnet" aria-pressed="false">C# and .NET</button>
+            <button class="chip" type="button" data-skill="python" aria-pressed="false">Python</button>
+            <button class="chip" type="button" data-skill="docker" aria-pressed="false">Docker</button>
+            <button class="chip" type="button" data-skill="rabbitmq" aria-pressed="false">RabbitMQ</button>
+            <button class="chip" type="button" data-skill="sql" aria-pressed="false">SQL</button>
+            <button class="chip" type="button" data-skill="ai" aria-pressed="false">AI and ML</button>
+            <button class="chip" type="button" data-skill="android" aria-pressed="false">Android</button>
+            <button class="chip" type="button" data-skill="cicd" aria-pressed="false">GitHub Actions</button>
+          </div>
+          <p class="explore__result" id="skill-result" role="status">Showing everything.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="work" aria-labelledby="work-title">
       <div class="shell section__grid">
         <h2 class="section__title" id="work-title">Work</h2>
         <div>
+          <p class="section__empty" id="work-empty" hidden></p>
           <article class="role">
             <div class="role__head">
               <h3 class="role__org">Congruent Solutions</h3>
@@ -135,11 +193,11 @@
               <p>Chennai, India</p>
             </div>
             <ul class="role__points">
-              <li>Build full-stack features and REST APIs in React, TypeScript, Node.js, C# and ASP.NET Core across <strong>20+ microservices</strong> that talk to each other over RabbitMQ.</li>
-              <li>Designed and rolled out a Docker-based local development environment, scripted in PowerShell, that <strong>20+ developers</strong> now use. Setup dropped from hours to <strong>under 15 minutes</strong>.</li>
-              <li>Traced and resolved <strong>100+ production and API issues</strong> by reading logs and following failures across containers, networks and backend dependencies, then worked with QA on the root-cause fix.</li>
-              <li>Delivered frontend features for the Participant Portal and a server-driven UI proof of concept on tight deadlines.</li>
-              <li>Automated data extraction in document-processing workflows with AWS Textract, and wrote the SQL queries and stored procedures behind several backend services.</li>
+              <li data-skills="react typescript node dotnet rabbitmq">Build full-stack features and REST APIs in React, TypeScript, Node.js, C# and ASP.NET Core across <strong>20+ microservices</strong> that talk to each other over RabbitMQ.</li>
+              <li data-skills="docker">Designed and rolled out a Docker-based local development environment, scripted in PowerShell, that <strong>20+ developers</strong> now use. Setup dropped from hours to <strong>under 15 minutes</strong>.</li>
+              <li data-skills="docker">Traced and resolved <strong>100+ production and API issues</strong> by reading logs and following failures across containers, networks and backend dependencies, then worked with QA on the root-cause fix.</li>
+              <li data-skills="react">Delivered frontend features for the Participant Portal and a server-driven UI proof of concept on tight deadlines.</li>
+              <li data-skills="sql">Automated data extraction in document-processing workflows with AWS Textract, and wrote the SQL queries and stored procedures behind several backend services.</li>
             </ul>
           </article>
 
@@ -154,8 +212,8 @@
               <p>Remote</p>
             </div>
             <ul class="role__points">
-              <li>Trained and evaluated machine learning and NLP models in Python with TensorFlow, PyTorch and scikit-learn, from preprocessing and feature engineering through to optimization.</li>
-              <li>Ran generative AI experiments on text summarization and synthetic data generation, and assessed the quality of what the models produced.</li>
+              <li data-skills="python ai">Trained and evaluated machine learning and NLP models in Python with TensorFlow, PyTorch and scikit-learn, from preprocessing and feature engineering through to optimization.</li>
+              <li data-skills="ai">Ran generative AI experiments on text summarization and synthetic data generation, and assessed the quality of what the models produced.</li>
             </ul>
           </article>
         </div>
@@ -167,11 +225,34 @@
         <h2 class="section__title" id="projects-title">Projects</h2>
         <div>
           <p class="section__lede">Built on my own time, mostly for phones. Each one ships as an installable app, not just a repository.</p>
+          <p class="section__empty" id="projects-empty" hidden></p>
 
-          <article class="project">
+          <article class="project" data-skills="react android cicd">
             <div>
               <h3 class="project__name">Nila Alavai <span lang="ta">நில அளவை</span></h3>
               <p class="project__what">A Tamil and English land area converter. Enter an extent in any of 20 units, from cent, ground and acre to kuzhi, veli and hectare, and see all the others at once. It also works out land price, building value and registration cost. One GitHub Actions workflow builds the Android app and the Windows desktop app from the same code.</p>
+
+              <details class="demo" id="demo-land" hidden>
+                <summary>Try the converter here</summary>
+                <div class="demo__body">
+                  <div class="demo__fields">
+                    <label class="field">
+                      <span>Extent</span>
+                      <input id="land-value" type="text" inputmode="decimal" autocomplete="off" value="5">
+                    </label>
+                    <label class="field">
+                      <span>Unit</span>
+                      <select id="land-unit"></select>
+                    </label>
+                  </div>
+                  <p class="demo__error" id="land-error" role="alert" hidden>Enter an extent as a number, such as 5 or 2.5.</p>
+                  <table class="demo__table" aria-live="polite">
+                    <caption>The same land in other units</caption>
+                    <tbody id="land-rows"></tbody>
+                  </table>
+                  <p class="demo__note">Eight of the app’s 20 units, using the same definitions. Kuzhi is taken as 144 sq ft, the most common value today.</p>
+                </div>
+              </details>
             </div>
             <div class="project__meta">
               <a href="https://github.com/SN1502/nila-alavai" rel="noopener">Nila Alavai on GitHub</a>
@@ -179,10 +260,42 @@
             </div>
           </article>
 
-          <article class="project">
+          <article class="project" data-skills="android cicd">
             <div>
               <h3 class="project__name">Deposit Manager</h3>
               <p class="project__what">An Android app that tracks a family’s fixed deposits and sends reminders before each maturity and interest date, even after the phone restarts. Records stay in the family’s own Excel sheet. The app has no internet permission, masks deposit numbers and can lock with a PIN or fingerprint.</p>
+
+              <details class="demo" id="demo-deposit" hidden>
+                <summary>Try the maturity calculator here</summary>
+                <div class="demo__body">
+                  <div class="demo__fields demo__fields--four">
+                    <label class="field">
+                      <span>Deposit value, ₹</span>
+                      <input id="dep-value" type="text" inputmode="decimal" autocomplete="off" value="100000">
+                    </label>
+                    <label class="field">
+                      <span>Interest, % a year</span>
+                      <input id="dep-rate" type="text" inputmode="decimal" autocomplete="off" value="7.5">
+                    </label>
+                    <label class="field">
+                      <span>Number of days</span>
+                      <input id="dep-days" type="text" inputmode="numeric" autocomplete="off" value="365">
+                    </label>
+                    <label class="field">
+                      <span>Deposit date</span>
+                      <input id="dep-date" type="date">
+                    </label>
+                  </div>
+                  <p class="demo__error" id="dep-error" role="alert" hidden>Fill in a value, an interest rate and a number of days, all above zero, and a deposit date.</p>
+                  <dl class="demo__results" id="dep-results" aria-live="polite">
+                    <div><dt>Matures on</dt><dd id="dep-mature">–</dd></div>
+                    <div><dt>Counted as</dt><dd id="dep-months">–</dd></div>
+                    <div><dt>Interest earned</dt><dd id="dep-interest">–</dd></div>
+                    <div><dt>Status today</dt><dd id="dep-position">–</dd></div>
+                  </dl>
+                  <p class="demo__note">The same rules as the app: interest is value × rate × months ÷ 12, with days rounded to whole months the way the family’s sheet counts them. Nothing you type here is stored or sent anywhere.</p>
+                </div>
+              </details>
             </div>
             <div class="project__meta">
               <a href="https://github.com/SN1502/deposit-manager" rel="noopener">Deposit Manager on GitHub</a>
@@ -190,7 +303,7 @@
             </div>
           </article>
 
-          <article class="project">
+          <article class="project" data-skills="react typescript android">
             <div>
               <h3 class="project__name">File Viewer</h3>
               <p class="project__what">Opens Excel, CSV and PDF files on a phone, straight from other apps. Wide spreadsheets get sheet switching and rows that expand to show every column. PDFs get paging and zoom. Builds for Android and Windows.</p>
@@ -201,7 +314,7 @@
             </div>
           </article>
 
-          <article class="project">
+          <article class="project" data-skills="dotnet rabbitmq sql">
             <div>
               <h3 class="project__name">AI Career Agent</h3>
               <p class="project__what">A job-application platform designed as microservices with Clean Architecture, domain-driven design and CQRS. The identity and authentication service is the part under construction now, with CQRS command handlers and an EF Core layer on PostgreSQL.</p>
@@ -212,7 +325,7 @@
             </div>
           </article>
 
-          <article class="project">
+          <article class="project" data-skills="python ai">
             <div>
               <h3 class="project__name">NLP Analyzer</h3>
               <p class="project__what">A Streamlit app that scores the sentiment of customer reviews with VADER and a Naive Bayes classifier, then charts the results.</p>
@@ -348,6 +461,11 @@
       </div>
     </div>
   </footer>
+
+  <div class="filterbar" id="filterbar" hidden>
+    <p id="filterbar-text">Showing everything</p>
+    <button type="button" id="filterbar-clear">Show everything</button>
+  </div>
 
   <script src="assets/site.js" defer></script>
 </body>
