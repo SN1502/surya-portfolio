@@ -151,6 +151,28 @@
     });
   }
 
+  /* ---------------------------------------------------------- duration */
+
+  /* Time in a current role, counted to this month: <span data-since="2024-09">.
+     The text already in the page is the fallback if this never runs. */
+  function plural(count, word) {
+    return count + " " + word + (count === 1 ? "" : "s");
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-since]"), function (node) {
+    var parts = /^(\d{4})-(\d{2})$/.exec(node.getAttribute("data-since") || "");
+    if (!parts) return;
+    var now = new Date();
+    var months = (now.getFullYear() - Number(parts[1])) * 12 + (now.getMonth() + 1 - Number(parts[2]));
+    if (!(months > 0)) return;
+    var years = Math.floor(months / 12);
+    var rest = months % 12;
+    var text = [];
+    if (years) text.push(plural(years, "year"));
+    if (rest) text.push(plural(rest, "month"));
+    node.textContent = text.join(" ");
+  });
+
   /* -------------------------------------------------------------- year */
 
   var year = document.getElementById("year");
