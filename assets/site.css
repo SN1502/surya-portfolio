@@ -524,15 +524,6 @@ a:hover {
   letter-spacing: -0.01em;
 }
 
-.project__name [lang="ta"] {
-  margin-left: 0.4rem;
-  color: var(--text-soft);
-  font-size: 0.72em;
-  font-weight: 500;
-  font-stretch: 100%;
-  letter-spacing: 0;
-}
-
 .project__what {
   max-width: var(--measure);
   margin-top: 0.5rem;
